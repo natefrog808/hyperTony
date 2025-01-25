@@ -1,0 +1,29 @@
+# Create WebSocket test client
+cat > test-websocket.ts << EOL
+import WebSocket from 'ws';
+
+const ws = new WebSocket('ws://localhost:8080');
+
+ws.on('open', () => {
+  console.log('Connected to WebSocket');
+  
+  // Test message
+  ws.send(JSON.stringify({
+    content: "Hello RoastBot!",
+    userId: "test_user",
+    userName: "TestDev"
+  }));
+});
+
+ws.on('message', (data) => {
+  console.log('Received:', JSON.parse(data.toString()));
+});
+
+ws.on('error', (error) => {
+  console.error('WebSocket Error:', error);
+});
+EOL
+
+# Run tests
+npm run start
+npm run test
