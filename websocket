@@ -1,0 +1,77 @@
+// src/services/websocketServer.ts
+import { Server as WebSocketServer } from 'ws';
+import { RoastBot } from '../bot/roastBot';
+import { VRMAvatar } from '../vrm/vrmAvatar';
+import logger from '../utils/logger';
+import agentConfig from '../config/agentConfig';
+
+export class AgentWebSocketServer {
+  private wss: WebSocketServer;
+  private roastBot: RoastBot;
+  private vrmAvatar: VRMAvatar;
+
+  constructor(roastBot: RoastBot, vrmAvatar: VRMAvatar) {
+    this.roastBot = roastBot;
+    this.vrmAvatar = vrmAvatar;
+    
+    this.wss = new WebSocketServer({ 
+      port: agentConfig.hyperfy.wsPort 
+    });
+
+    this.setupEventHandlers();
+  }
+
+  private setupEventHandlers() {
+    this.wss.on('connection', async (ws) => {
+      logger.info('New WebSocket connection established');
+
+      ws.on('message', async (rawMessage) => {
+        try {
+          const message = JSON.parse(rawMessage.toString());
+          const response = await this.processMessage(message);
+          
+          ws.send(JSON.stringify({
+            type: 'agent_response',
+            content: response.text,
+            avatar: {
+              expression: response.expression,
+              mood: this.roastBot.getMoodLevel()
+            }
+          }));
+        } catch (error) {
+          logger.error('WebSocket message processing error', error);
+          ws.send(JSON.stringify({ 
+            type: 'error', 
+            message: 'Invalid message format' 
+          }));
+        }
+      });
+
+      ws.on('close', () => {
+        logger.info('WebSocket connection closed');
+      });
+    });
+  }
+
+  private async processMessage(message: any) {
+    const nlpAnalysis = await this.roastBot.analyzeMessage(message.content);
+    const response = await this.roastBot.generateResponse(message, nlpAnalysis);
+    
+    return {
+      text: response,
+      expression: this.determineExpression(response)
+    };
+  }
+
+  private determineExpression(response: string): string {
+    const mood = this.roastBot.getMoodLevel();
+    if (mood > 5) return 'happy';
+    if (mood < -5) return 'angry';
+    return 'neutral';
+  }
+
+  public close() {
+    this.wss.close();
+    logger.info('WebSocket server closed');
+  }
+}
