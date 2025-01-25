@@ -1,0 +1,26 @@
+# Install Blender and VRM export plugin
+# Option 1: Manual - Use Blender with VRM export plugin
+# https://github.com/saturday06/VRM-Addon-for-Blender
+
+# Option 2: Quick Generation Script
+mkdir -p avatars
+cat > generate-vrm-avatar.py << EOL
+import bpy
+import vrm_addon
+
+def create_roast_bot_avatar():
+    # Create basic humanoid mesh
+    bpy.ops.mesh.primitive_uv_sphere_add()
+    avatar_mesh = bpy.context.active_object
+    
+    # Configure VRM parameters
+    vrm_extension = avatar_mesh.vrm_addon_extension
+    vrm_extension.humanoid.human_bones.hips.node = avatar_mesh
+    
+    # Export VRM
+    bpy.ops.export_scene.vrm(filepath="./avatars/roastbot.vrm")
+
+create_roast_bot_avatar()
+EOL
+
+# Note: Requires manual Blender execution
