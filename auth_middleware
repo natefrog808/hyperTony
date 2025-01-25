@@ -1,0 +1,12 @@
+// src/middleware/auth.ts
+export class AuthMiddleware {
+  static validateApiKey(apiKey: string): boolean {
+    // Implement secure API key validation
+    return apiKey && apiKey.startsWith('sk-');
+  }
+
+  static generateAccessToken(): string {
+    // Generate secure access token
+    return crypto.randomBytes(32).toString('hex');
+  }
+}
