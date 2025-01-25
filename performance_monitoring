@@ -1,0 +1,18 @@
+// src/monitoring/performanceTracker.ts
+export class PerformanceTracker {
+  private startTime: number;
+  private endTime: number;
+
+  start(): void {
+    this.startTime = performance.now();
+  }
+
+  stop(): number {
+    this.endTime = performance.now();
+    return this.endTime - this.startTime;
+  }
+
+  logPerformance(operation: string, duration: number): void {
+    console.log(`[Performance] ${operation}: ${duration}ms`);
+  }
+}
