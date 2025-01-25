@@ -1,0 +1,26 @@
+npm pkg set scripts.start="ts-node src/index.ts"
+npm pkg set scripts.test="jest"
+
+mkdir -p src
+cat > src/index.ts << EOL
+import WebSocket from 'ws';
+
+const ws = new WebSocket('ws://localhost:8080');
+
+ws.on('open', () => {
+  console.log('Connected to WebSocket');
+  ws.send(JSON.stringify({
+    content: "Hello RoastBot!",
+    userId: "test_user",
+    userName: "TestDev"
+  }));
+});
+
+ws.on('message', (data) => {
+  console.log('Received:', JSON.parse(data.toString()));
+});
+
+ws.on('error', (error) => {
+  console.error('WebSocket Error:', error);
+});
+EOL
