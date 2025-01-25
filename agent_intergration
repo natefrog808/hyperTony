@@ -1,0 +1,110 @@
+// src/hyperfy/agent.ts
+import { Vector3, Quaternion, Matrix4 } from 'three';
+import { RoastBot } from '../bot/roastBot';
+import agentConfig from '../config/agentConfig';
+
+const BUBBLE_TIME = 5;
+const EMOTE_TIME = 2;
+const LOOK_TIME = 5;
+
+export class HyperfyAgent {
+  private vrm: any;
+  private roastBot: RoastBot;
+  private world: any;
+  private app: any;
+
+  constructor(world: any, app: any, roastBot: RoastBot) {
+    this.world = world;
+    this.app = app;
+    this.roastBot = roastBot;
+    this.vrm = app.get('avatar');
+  }
+
+  initializeServerSide() {
+    if (!this.world.isServer) return;
+
+    const state = { ready: true };
+    this.app.state = state;
+    this.app.send('state', state);
+
+    const ctrl = this.app.create('controller');
+    ctrl.position.copy(this.app.position);
+    this.world.add(ctrl);
+    ctrl.quaternion.copy(this.app.quaternion);
+    ctrl.add(this.vrm);
+
+    this.setupEnvironmentObservation();
+  }
+
+  private setupEnvironmentObservation() {
+    const emoteUrls = this.collectEmoteUrls();
+    const info = this.createInitialWorldInfo(emoteUrls);
+
+    this.setupWorldEventListeners(info);
+    this.setupNotificationSystem(info, emoteUrls);
+  }
+
+  private collectEmoteUrls(): Record<string, string> {
+    const emoteUrls: Record<string, string> = {};
+    const config = this.app.config;
+
+    ['emote1', 'emote2', 'emote3', 'emote4'].forEach(emoteKey => {
+      const nameSuffix = 'Name';
+      if (config[emoteKey + nameSuffix] && config[emoteKey]?.url) {
+        emoteUrls[config[emoteKey + nameSuffix]] = config[emoteKey].url;
+      }
+    });
+
+    return emoteUrls;
+  }
+
+  private createInitialWorldInfo(emoteUrls: Record<string, string>) {
+    return {
+      world: {
+        id: null,
+        name: null,
+        url: null,
+        context: this.app.config.context || 'AI Agent in Virtual World'
+      },
+      you: {
+        id: this.app.instanceId,
+        name: this.app.config.name
+      },
+      emotes: Object.keys(emoteUrls),
+      triggers: [],
+      events: []
+    };
+  }
+
+  private setupWorldEventListeners(info: any) {
+    this.world.on('enter', (player) => {
+      info.events.push({
+        type: 'player-enter',
+        playerId: player.entityId
+      });
+    });
+
+    this.world.on('leave', (player) => {
+      info.events.push({
+        type: 'player-leave',
+        playerId: player.entityId
+      });
+    });
+
+    this.world.on('chat', (msg) => {
+      if (msg.fromId === this.app.instanceId) return;
+      info.events.push({
+        type: 'chat',
+        ...msg
+      });
+      if (info.events.length > 16) {
+        info.events.shift();
+      }
+    });
+  }
+
+  private setupNotificationSystem(info: any, emoteUrls: Record<string, string>) {
+    // Implement notification logic similar to original script
+    // This would integrate with RoastBot's message handling
+  }
+}
