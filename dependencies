@@ -1,0 +1,11 @@
+# Initialize npm project
+npm init -y
+
+# Install TypeScript and core dependencies
+npm install typescript ts-node @types/node dotenv express ws socket.io openai @pixiv/three-vrm ioredis winston
+
+# Install development dependencies
+npm install --save-dev jest @types/jest @types/express @types/ws pm2
+
+# Create TypeScript configuration
+npx tsc --init
