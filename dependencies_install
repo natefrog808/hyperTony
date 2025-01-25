@@ -1,0 +1,6 @@
+mkdir hyperfy-roastbot
+cd hyperfy-roastbot
+npm init -y
+npm install typescript ts-node @types/node dotenv express ws socket.io openai @pixiv/three-vrm ioredis winston
+npm install --save-dev jest @types/jest @types/express @types/ws pm2
+npx tsc --init
