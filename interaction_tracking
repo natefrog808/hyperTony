@@ -1,0 +1,16 @@
+// src/services/interactionTracker.ts
+export class InteractionTracker {
+  private interactions: Map<string, number> = new Map();
+
+  recordInteraction(userId: string): void {
+    const count = this.interactions.get(userId) || 0;
+    this.interactions.set(userId, count + 1);
+  }
+
+  getInteractionStats(userId: string) {
+    return {
+      totalInteractions: this.interactions.get(userId) || 0,
+      lastInteractionTimestamp: Date.now()
+    };
+  }
+}
