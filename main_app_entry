@@ -1,0 +1,60 @@
+// src/index.ts
+import { RoastBot } from './bot/roastBot';
+import { VRMAvatar } from './vrm/vrmAvatar';
+import { AgentWebSocketServer } from './services/websocketServer';
+import logger from './utils/logger';
+import agentConfig from './config/agentConfig';
+
+class HyperfyAIAgent {
+  private roastBot: RoastBot;
+  private vrmAvatar: VRMAvatar;
+  private wsServer: AgentWebSocketServer;
+
+  constructor() {
+    this.initializeComponents();
+  }
+
+  private initializeComponents() {
+    try {
+      this.roastBot = new RoastBot(
+        agentConfig.openai.apiKey, 
+        agentConfig.redis
+      );
+
+      this.vrmAvatar = new VRMAvatar(
+        agentConfig.hyperfy.avatarPath,
+        agentConfig.vrm.expressionMap
+      );
+
+      this.wsServer = new AgentWebSocketServer(
+        this.roastBot, 
+        this.vrmAvatar
+      );
+
+      logger.info('Hyperfy AI Agent initialized successfully');
+    } catch (error) {
+      logger.error('Initialization failed', error);
+      process.exit(1);
+    }
+  }
+
+  public async start() {
+    logger.info(`Starting ${agentConfig.agent.name} v${agentConfig.agent.version}`);
+  }
+
+  public async stop() {
+    await this.roastBot.disconnect();
+    this.wsServer.close();
+    logger.info('Agent shutdown complete');
+  }
+}
+
+const agent = new HyperfyAIAgent();
+agent.start();
+
+process.on('SIGINT', async () => {
+  await agent.stop();
+  process.exit(0);
+});
+
+export default HyperfyAIAgent;
