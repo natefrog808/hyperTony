@@ -1,0 +1,13 @@
+# Create .env file with secure placeholders
+cat > .env << EOL
+OPENAI_API_KEY=sk-your_openai_api_key_here
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=strong_redis_password
+AGENT_NAME=RoastBot
+AGENT_VERSION=1.0.0
+HYPERFY_WS_PORT=8080
+EOL
+
+# Set file permissions
+chmod 600 .env
