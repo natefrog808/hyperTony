@@ -1,0 +1,8 @@
+// src/utils/errorHandler.ts
+export class ErrorHandler {
+  static handle(error: Error, context?: string) {
+    // Centralized error logging and potential recovery
+    console.error(`[${context || 'Global'}] Error:`, error);
+    // Optional: Send error to monitoring service
+  }
+}
